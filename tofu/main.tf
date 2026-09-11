@@ -18,7 +18,7 @@ resource "proxmox_virtual_environment_vm" "debian_srv" {
 
   # 3. Hardware Specs
   cpu {
-    cores = 2
+    cores = 1
     type  = "host"
   }
 
@@ -28,7 +28,7 @@ resource "proxmox_virtual_environment_vm" "debian_srv" {
 
   disk {
     datastore_id = "local-lvm"
-    size         = 20
+    size         = 15
     interface    = "scsi0"
   }
 

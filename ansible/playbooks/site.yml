@@ -14,22 +14,6 @@
       ansible.builtin.setup:
 
   tasks:
-    - name: Update apt cache
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 3600
-
-    - name: Pasang aplikasi dasar
-      ansible.builtin.apt:
-        name:
-          - curl
-          - wget
-          - git
-          - ufw
-          - htop
-          - sudo
-        state: present
-
     - name: Pastikan user debian memiliki akses sudo tanpa password
       ansible.builtin.lineinfile:
         path: /etc/sudoers.d/debian
