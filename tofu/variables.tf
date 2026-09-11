@@ -23,7 +23,7 @@ variable "template_id" {
 
 variable "vm_id" {
   type        = number
-  default     = 201
+  default     = 202
   description = "VM ID baru yang akan dibuat"
 }
 

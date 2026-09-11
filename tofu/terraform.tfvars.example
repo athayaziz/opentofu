@@ -2,6 +2,6 @@ proxmox_endpoint  = "https://pve.athayaafatih.my.id/"
 proxmox_api_token = "opentofu@pve!tofu-token=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 proxmox_node      = "pve"
 template_id       = 9001
-vm_id             = 203
+vm_id             = 202
 vm_name           = "srv-debian-01"
 ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
