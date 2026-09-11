@@ -17,7 +17,7 @@ variable "proxmox_node" {
 
 variable "template_id" {
   type        = number
-  default     = 9000
+  default     = 9001
   description = "ID VM Template Debian 12 yang dibuat sebelumnya"
 }
 
