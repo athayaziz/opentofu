@@ -1,7 +1,7 @@
 proxmox_endpoint  = "https://pve.athayaafatih.my.id/"
 proxmox_api_token = "opentofu@pve!tofu-token=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 proxmox_node      = "pve"
-template_file_id  = "local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst"
+template_file_id  = "local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst"
 ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
 
 # Contoh 1 Container:

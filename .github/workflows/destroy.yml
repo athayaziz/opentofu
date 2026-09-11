@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       target_type:
-        description: 'Tipe resource yang ingin dihapus'
+        description: 'Resources Type (VM/LXC)'
         required: true
         type: choice
         options:
@@ -12,7 +12,7 @@ on:
           - 'lxc'
         default: 'vm'
       target_id:
-        description: 'Nama atau ID (misal: "202", "100", "srv-debian-01", pisahkan koma jika lebih dari satu, atau ketik "all" untuk hapus semua)'
+        description: 'VM ID or LXC ID'
         required: true
         default: 'all'
         type: string
