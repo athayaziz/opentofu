@@ -14,6 +14,11 @@
       ansible.builtin.setup:
 
   tasks:
+    - name: Install SSH
+      ansible.builtin.apt:
+        name: openssh-server
+        state: present
+        
     - name: Pastikan user debian memiliki akses sudo tanpa password
       ansible.builtin.lineinfile:
         path: /etc/sudoers.d/debian

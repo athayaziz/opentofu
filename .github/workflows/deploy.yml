@@ -18,7 +18,7 @@ jobs:
       - name: OpenTofu Init & Apply
         working-directory: ./tofu
         run: |
-          tofu init
+          tofu init -backend-config="path=/home/runner/terraform.tfstate"
           tofu apply -auto-approve \
             -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
             -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \

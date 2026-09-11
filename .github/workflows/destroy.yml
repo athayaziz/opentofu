@@ -15,7 +15,7 @@ jobs:
       - name: OpenTofu Destroy
         working-directory: ./tofu
         run: |
-          tofu init
+          tofu init -backend-config="path=/home/runner/terraform.tfstate"
           tofu destroy -auto-approve \
             -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
             -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
