@@ -1,0 +1,18 @@
+# OpenTofu / Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+.terraform.lock.hcl
+
+# Ansible
+ansible/inventory/hosts.ini
+*.retry
+
+# System & Keys
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.DS_Store

@@ -1,0 +1,38 @@
+name: "Proxmox GitOps: Deploy & Configure"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: "Provision VM & Run Ansible"
+    runs-on: self-hosted # Menggunakan runner LXC di Proxmox Anda
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 1: Eksekusi OpenTofu
+      - name: OpenTofu Init & Apply
+        working-directory: ./tofu
+        run: |
+          tofu init
+          tofu apply -auto-approve \
+            -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
+            -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+
+      # Step 2: Siapkan SSH Key untuk Ansible
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
+          chmod 600 ~/.ssh/id_ansible
+
+      # Step 3: Eksekusi Ansible
+      - name: Run Ansible Playbook
+        working-directory: ./ansible
+        run: |
+          ansible-playbook --private-key ~/.ssh/id_ansible playbooks/site.yml

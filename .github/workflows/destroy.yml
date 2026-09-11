@@ -1,0 +1,22 @@
+name: "Proxmox GitOps: Teardown VM"
+
+on:
+  workflow_dispatch: # Trigger manual di tab Actions GitHub
+
+jobs:
+  destroy:
+    name: "Destroy Proxmox VM"
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: OpenTofu Destroy
+        working-directory: ./tofu
+        run: |
+          tofu init
+          tofu destroy -auto-approve \
+            -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
+            -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
