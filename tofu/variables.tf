@@ -36,3 +36,10 @@ variable "ssh_public_key" {
   type        = string
   description = "Public key SSH yang akan di-inject ke user debian"
 }
+
+variable "vm_password" {
+  type        = string
+  default     = "debian123"
+  description = "Password user debian untuk login Console Proxmox"
+  sensitive   = true
+}

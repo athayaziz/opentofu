@@ -5,3 +5,4 @@ template_id       = 9001
 vm_id             = 202
 vm_name           = "srv-debian-01"
 ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
+vm_password       = "debian123"
