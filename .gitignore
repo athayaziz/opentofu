@@ -8,6 +8,7 @@
 
 # Ansible
 ansible/inventory/hosts.ini
+**/inventory/hosts.ini
 *.retry
 
 # System & Keys

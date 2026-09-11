@@ -1,0 +1,49 @@
+proxmox_endpoint  = "https://pve.athayaafatih.my.id/"
+proxmox_api_token = "opentofu@pve!tofu-token=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+proxmox_node      = "pve"
+template_file_id  = "local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst"
+ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
+
+# Contoh 1 Container:
+containers = {
+  "ct-debian-01" = {
+    ct_id        = 101
+    password     = "12345"
+    cores        = 1
+    memory       = 1024
+    swap         = 512
+    disk_size    = 8
+    unprivileged = true
+  }
+}
+
+# Contoh Multi-Container (3 CT) dengan konfigurasi berbeda:
+# containers = {
+#   "ct-web-01" = {
+#     ct_id        = 101
+#     password     = "Web123!"
+#     cores        = 2
+#     memory       = 1024
+#     swap         = 512
+#     disk_size    = 8
+#     unprivileged = true
+#   },
+#   "ct-app-01" = {
+#     ct_id        = 102
+#     password     = "App123!"
+#     cores        = 2
+#     memory       = 2048
+#     swap         = 512
+#     disk_size    = 10
+#     unprivileged = true
+#   },
+#   "ct-db-01" = {
+#     ct_id        = 103
+#     password     = "Db123!"
+#     cores        = 4
+#     memory       = 2048
+#     swap         = 1024
+#     disk_size    = 20
+#     unprivileged = true
+#   }
+# }

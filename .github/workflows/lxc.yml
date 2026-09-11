@@ -1,0 +1,42 @@
+name: "Proxmox GitOps: Deploy LXC"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'containers/**'
+      - '.github/workflows/lxc.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy_lxc:
+    name: "Provision LXC & Run Ansible"
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 1: Eksekusi OpenTofu LXC
+      - name: OpenTofu Init & Apply (LXC)
+        working-directory: ./containers/tofu
+        run: |
+          tofu init -backend-config="path=/home/runner/lxc-terraform.tfstate"
+          tofu apply -auto-approve \
+            -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
+            -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+
+      # Step 2: Siapkan SSH Key untuk Ansible
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
+          chmod 600 ~/.ssh/id_ansible
+
+      # Step 3: Eksekusi Ansible
+      - name: Run Ansible Playbook
+        working-directory: ./containers/ansible
+        run: |
+          ansible-playbook --private-key ~/.ssh/id_ansible playbooks/site.yml

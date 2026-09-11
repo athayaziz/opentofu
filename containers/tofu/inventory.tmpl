@@ -1,0 +1,4 @@
+[servers]
+%{ for ct in containers ~}
+${ct.name} ansible_host=${ct.ip} ansible_user=${ct.user}
+%{ endfor ~}

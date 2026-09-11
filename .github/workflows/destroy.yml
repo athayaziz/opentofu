@@ -1,30 +1,40 @@
-name: "Proxmox GitOps: Teardown VM"
+name: "Proxmox GitOps: Teardown"
 
 on:
   workflow_dispatch:
     inputs:
-      target_vms:
-        description: 'VM yang ingin dihapus (bisa nama VM misal "srv-debian-01", atau VM ID misal "202", pisahkan dengan koma jika lebih dari satu, atau ketik "all" untuk hapus semua)'
+      target_type:
+        description: 'Tipe resource yang ingin dihapus'
+        required: true
+        type: choice
+        options:
+          - 'vm'
+          - 'lxc'
+        default: 'vm'
+      target_id:
+        description: 'Nama atau ID (misal: "202", "100", "srv-debian-01", pisahkan koma jika lebih dari satu, atau ketik "all" untuk hapus semua)'
         required: true
         default: 'all'
         type: string
 
 jobs:
   destroy:
-    name: "Destroy Proxmox VM"
+    name: "Destroy Proxmox Resource"
     runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: OpenTofu Destroy
-        working-directory: ./tofu
+      # Teardown VM
+      - name: OpenTofu Destroy (VM)
+        if: ${{ github.event.inputs.target_type == 'vm' }}
+        working-directory: ./vms/tofu
         run: |
-          tofu init -backend-config="path=/home/runner/terraform.tfstate"
+          tofu init -backend-config="path=/home/runner/vm-terraform.tfstate"
 
           TARGET_ARGS=""
-          INPUT="${{ github.event.inputs.target_vms }}"
+          INPUT="${{ github.event.inputs.target_id }}"
 
           if [ "$INPUT" != "all" ] && [ -n "$INPUT" ]; then
             echo "Target filter: $INPUT"
@@ -32,13 +42,11 @@ jobs:
             for item in "${ITEMS[@]}"; do
               item_trimmed=$(echo "$item" | xargs)
               if [ -n "$item_trimmed" ]; then
-                # Cek jika input sesuai dengan nama resource key
                 MATCH=$(tofu state list | grep -F "proxmox_virtual_environment_vm.debian_srv[\"$item_trimmed\"]" || true)
                 if [ -n "$MATCH" ]; then
                   echo "Found target by name: $MATCH"
                   TARGET_ARGS="$TARGET_ARGS -target=$MATCH"
                 else
-                  # Cek jika input berupa VM ID (misal: 202)
                   FOUND=""
                   for res in $(tofu state list | grep 'proxmox_virtual_environment_vm.debian_srv'); do
                     if tofu state show "$res" | grep -E "vm_id\s+=\s+$item_trimmed$" > /dev/null 2>&1; then
@@ -57,6 +65,53 @@ jobs:
             done
           else
             echo "Destroying all VMs in state..."
+          fi
+
+          echo "Running tofu destroy with args: $TARGET_ARGS"
+          tofu destroy -auto-approve $TARGET_ARGS \
+            -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
+            -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
+            -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+
+      # Teardown LXC Container
+      - name: OpenTofu Destroy (LXC)
+        if: ${{ github.event.inputs.target_type == 'lxc' }}
+        working-directory: ./containers/tofu
+        run: |
+          tofu init -backend-config="path=/home/runner/lxc-terraform.tfstate"
+
+          TARGET_ARGS=""
+          INPUT="${{ github.event.inputs.target_id }}"
+
+          if [ "$INPUT" != "all" ] && [ -n "$INPUT" ]; then
+            echo "Target filter: $INPUT"
+            IFS=',' read -r -a ITEMS <<< "$INPUT"
+            for item in "${ITEMS[@]}"; do
+              item_trimmed=$(echo "$item" | xargs)
+              if [ -n "$item_trimmed" ]; then
+                MATCH=$(tofu state list | grep -F "proxmox_virtual_environment_container.debian_ct[\"$item_trimmed\"]" || true)
+                if [ -n "$MATCH" ]; then
+                  echo "Found target by name: $MATCH"
+                  TARGET_ARGS="$TARGET_ARGS -target=$MATCH"
+                else
+                  FOUND=""
+                  for res in $(tofu state list | grep 'proxmox_virtual_environment_container.debian_ct'); do
+                    if tofu state show "$res" | grep -E "vm_id\s+=\s+$item_trimmed$" > /dev/null 2>&1; then
+                      FOUND="$res"
+                      break
+                    fi
+                  done
+                  if [ -n "$FOUND" ]; then
+                    echo "Found target by Container ID ($item_trimmed): $FOUND"
+                    TARGET_ARGS="$TARGET_ARGS -target=$FOUND"
+                  else
+                    echo "::warning::Container '$item_trimmed' tidak ditemukan di state OpenTofu."
+                  fi
+                fi
+              fi
+            done
+          else
+            echo "Destroying all LXC Containers in state..."
           fi
 
           echo "Running tofu destroy with args: $TARGET_ARGS"

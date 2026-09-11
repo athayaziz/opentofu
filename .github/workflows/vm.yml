@@ -1,24 +1,28 @@
-name: "Proxmox GitOps: Deploy & Configure"
+name: "Proxmox GitOps: Deploy VM"
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'vms/**'
+      - '.github/workflows/vm.yml'
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy_vm:
     name: "Provision VM & Run Ansible"
-    runs-on: self-hosted # Menggunakan runner LXC di Proxmox Anda
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 1: Eksekusi OpenTofu
-      - name: OpenTofu Init & Apply
-        working-directory: ./tofu
+      # Step 1: Eksekusi OpenTofu VM
+      - name: OpenTofu Init & Apply (VM)
+        working-directory: ./vms/tofu
         run: |
-          tofu init -backend-config="path=/home/runner/terraform.tfstate"
+          tofu init -backend-config="path=/home/runner/vm-terraform.tfstate"
           tofu apply -auto-approve \
             -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
             -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
@@ -33,6 +37,6 @@ jobs:
 
       # Step 3: Eksekusi Ansible
       - name: Run Ansible Playbook
-        working-directory: ./ansible
+        working-directory: ./vms/ansible
         run: |
           ansible-playbook --private-key ~/.ssh/id_ansible playbooks/site.yml
