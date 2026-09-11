@@ -22,9 +22,6 @@
         mode: "0440"
         validate: "visudo -cf %s"
 
-    - name: Set password user debian untuk login Console Proxmox
-      ansible.builtin.shell: echo "debian:12345" | chpasswd
-
     - name: Tampilkan status sukses
       ansible.builtin.debug:
         msg: "Server {{ inventory_hostname }} dengan IP {{ ansible_host }} berhasil dikonfigurasi!"
