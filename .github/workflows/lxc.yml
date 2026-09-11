@@ -18,7 +18,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 1: Eksekusi OpenTofu LXC
+      # Step 1: Eksekusi OpenTofu LXC (DHCP)
       - name: OpenTofu Init & Apply (LXC)
         working-directory: ./containers/tofu
         run: |
@@ -27,15 +27,71 @@ jobs:
             -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
             -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
             -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+          tofu output -json containers > containers.json
 
-      # Step 2: Siapkan SSH Key untuk Ansible
+      # Step 2: Dapatkan DHCP IP aktual dari Proxmox API & generate inventory Ansible
+      - name: Fetch DHCP IP & Generate Inventory
+        run: |
+          python3 - << 'EOF'
+          import json, ssl, time, urllib.request, os
+
+          endpoint = "${{ secrets.PROXMOX_ENDPOINT }}".rstrip('/')
+          token = "${{ secrets.PROXMOX_API_TOKEN }}".strip()
+          node = "pve"
+
+          ctx = ssl.create_default_context()
+          ctx.check_hostname = False
+          ctx.verify_mode = ssl.CERT_NONE
+
+          with open("containers/tofu/containers.json", "r") as f:
+              data = json.load(f)
+
+          hosts = []
+          for name, info in data.items():
+              ct_id = info["id"]
+              print(f"Menunggu DHCP IP untuk {name} (ID: {ct_id})...")
+              ip = None
+              req = urllib.request.Request(
+                  f"{endpoint}/api2/json/nodes/{node}/lxc/{ct_id}/interfaces",
+                  headers={"Authorization": f"PVEAPIToken={token}"}
+              )
+              for attempt in range(30):
+                  try:
+                      with urllib.request.urlopen(req, context=ctx) as resp:
+                          res_data = json.loads(resp.read().decode())
+                          for iface in res_data.get("data", []):
+                              if iface.get("name") == "eth0" and "inet" in iface:
+                                  candidate = iface["inet"].split("/")[0]
+                                  if candidate and candidate != "127.0.0.1":
+                                      ip = candidate
+                                      break
+                      if ip:
+                          break
+                  except Exception as e:
+                      pass
+                  time.sleep(2)
+
+              if ip:
+                  print(f"Berhasil: {name} (ID: {ct_id}) -> IP DHCP: {ip}")
+                  hosts.append(f"{name} ansible_host={ip} ansible_user=root")
+              else:
+                  print(f"Error: Gagal mendapatkan DHCP IP untuk {name}")
+                  exit(1)
+
+          os.makedirs("containers/ansible/inventory", exist_ok=True)
+          with open("containers/ansible/inventory/hosts.ini", "w") as f:
+              f.write("[servers]\n" + "\n".join(hosts) + "\n")
+          print("Inventory hosts.ini berhasil dibuat dengan IP DHCP.")
+          EOF
+
+      # Step 3: Siapkan SSH Key untuk Ansible
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
           chmod 600 ~/.ssh/id_ansible
 
-      # Step 3: Eksekusi Ansible
+      # Step 4: Eksekusi Ansible
       - name: Run Ansible Playbook
         working-directory: ./containers/ansible
         run: |

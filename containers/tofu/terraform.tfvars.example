@@ -4,12 +4,10 @@ proxmox_node      = "pve"
 template_file_id  = "local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst"
 ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
 
-# Contoh 1 Container:
+# 1 Container (Murni DHCP):
 containers = {
   "ct-debian-01" = {
     ct_id        = 106
-    ip_address   = "192.168.88.106/24"
-    gateway      = "192.168.88.1"
     password     = "12345"
     cores        = 1
     memory       = 1024
@@ -18,40 +16,3 @@ containers = {
     unprivileged = true
   }
 }
-
-# Contoh Multi-Container (3 CT) dengan konfigurasi berbeda:
-# containers = {
-#   "ct-web-01" = {
-#     ct_id        = 106
-#     ip_address   = "192.168.1.61/24"
-#     gateway      = "192.168.1.1"
-#     password     = "Web123!"
-#     cores        = 2
-#     memory       = 1024
-#     swap         = 512
-#     disk_size    = 8
-#     unprivileged = true
-#   },
-#   "ct-app-01" = {
-#     ct_id        = 107
-#     ip_address   = "192.168.1.62/24"
-#     gateway      = "192.168.1.1"
-#     password     = "App123!"
-#     cores        = 2
-#     memory       = 2048
-#     swap         = 512
-#     disk_size    = 10
-#     unprivileged = true
-#   },
-#   "ct-db-01" = {
-#     ct_id        = 108
-#     ip_address   = "192.168.1.63/24"
-#     gateway      = "192.168.1.1"
-#     password     = "Db123!"
-#     cores        = 4
-#     memory       = 2048
-#     swap         = 1024
-#     disk_size    = 20
-#     unprivileged = true
-#   }
-# }

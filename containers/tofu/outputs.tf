@@ -1,10 +1,9 @@
 output "containers" {
   value = {
-    for k, ct in var.containers : k => {
-      id   = ct.ct_id
+    for k, ct in proxmox_virtual_environment_container.debian_ct : k => {
+      id   = ct.vm_id
       name = k
-      ip   = ct.ip_address != "dhcp" ? split("/", ct.ip_address)[0] : ct.ip_address
     }
   }
-  description = "Daftar LXC Container yang dibuat beserta ID dan IP"
+  description = "Daftar LXC Container yang berhasil dibuat"
 }
