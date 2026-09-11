@@ -22,7 +22,7 @@ containers = {
 # Contoh Multi-Container (3 CT) dengan konfigurasi berbeda:
 # containers = {
 #   "ct-web-01" = {
-#     ct_id        = 101
+#     ct_id        = 106
 #     ip_address   = "192.168.1.61/24"
 #     gateway      = "192.168.1.1"
 #     password     = "Web123!"
@@ -33,7 +33,7 @@ containers = {
 #     unprivileged = true
 #   },
 #   "ct-app-01" = {
-#     ct_id        = 102
+#     ct_id        = 107
 #     ip_address   = "192.168.1.62/24"
 #     gateway      = "192.168.1.1"
 #     password     = "App123!"
@@ -44,7 +44,7 @@ containers = {
 #     unprivileged = true
 #   },
 #   "ct-db-01" = {
-#     ct_id        = 103
+#     ct_id        = 108
 #     ip_address   = "192.168.1.63/24"
 #     gateway      = "192.168.1.1"
 #     password     = "Db123!"
