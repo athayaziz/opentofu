@@ -39,7 +39,7 @@ variable "ssh_public_key" {
 
 variable "vm_password" {
   type        = string
-  default     = "debian123"
+  default     = "12345"
   description = "Password user debian untuk login Console Proxmox"
   sensitive   = true
 }
