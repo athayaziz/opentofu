@@ -1,7 +1,13 @@
 name: "Proxmox GitOps: Teardown VM"
 
 on:
-  workflow_dispatch: # Trigger manual di tab Actions GitHub
+  workflow_dispatch:
+    inputs:
+      target_vms:
+        description: 'VM yang ingin dihapus (bisa nama VM misal "srv-debian-01", atau VM ID misal "202", pisahkan dengan koma jika lebih dari satu, atau ketik "all" untuk hapus semua)'
+        required: true
+        default: 'all'
+        type: string
 
 jobs:
   destroy:
@@ -16,7 +22,45 @@ jobs:
         working-directory: ./tofu
         run: |
           tofu init -backend-config="path=/home/runner/terraform.tfstate"
-          tofu destroy -auto-approve \
+
+          TARGET_ARGS=""
+          INPUT="${{ github.event.inputs.target_vms }}"
+
+          if [ "$INPUT" != "all" ] && [ -n "$INPUT" ]; then
+            echo "Target filter: $INPUT"
+            IFS=',' read -r -a ITEMS <<< "$INPUT"
+            for item in "${ITEMS[@]}"; do
+              item_trimmed=$(echo "$item" | xargs)
+              if [ -n "$item_trimmed" ]; then
+                # Cek jika input sesuai dengan nama resource key
+                MATCH=$(tofu state list | grep -F "proxmox_virtual_environment_vm.debian_srv[\"$item_trimmed\"]" || true)
+                if [ -n "$MATCH" ]; then
+                  echo "Found target by name: $MATCH"
+                  TARGET_ARGS="$TARGET_ARGS -target=$MATCH"
+                else
+                  # Cek jika input berupa VM ID (misal: 202)
+                  FOUND=""
+                  for res in $(tofu state list | grep 'proxmox_virtual_environment_vm.debian_srv'); do
+                    if tofu state show "$res" | grep -E "vm_id\s+=\s+$item_trimmed$" > /dev/null 2>&1; then
+                      FOUND="$res"
+                      break
+                    fi
+                  done
+                  if [ -n "$FOUND" ]; then
+                    echo "Found target by VM ID ($item_trimmed): $FOUND"
+                    TARGET_ARGS="$TARGET_ARGS -target=$FOUND"
+                  else
+                    echo "::warning::VM '$item_trimmed' tidak ditemukan di state OpenTofu."
+                  fi
+                fi
+              fi
+            done
+          else
+            echo "Destroying all VMs in state..."
+          fi
+
+          echo "Running tofu destroy with args: $TARGET_ARGS"
+          tofu destroy -auto-approve $TARGET_ARGS \
             -var="proxmox_endpoint=${{ secrets.PROXMOX_ENDPOINT }}" \
             -var="proxmox_api_token=${{ secrets.PROXMOX_API_TOKEN }}" \
             -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"

@@ -1,29 +1,29 @@
 variable "proxmox_endpoint" {
   type        = string
-  description = "URL Proxmox Web GUI, contoh: https://192.168.1.100:8006/"
+  description = "URL Proxmox Web"
 }
 
 variable "proxmox_api_token" {
   type        = string
-  description = "Token API Proxmox (Format: USER@REALM!TOKENID=UUID)"
+  description = "API Proxmox Token"
   sensitive   = true
 }
 
 variable "proxmox_node" {
   type        = string
   default     = "pve"
-  description = "Nama node Proxmox Anda"
+  description = "Node Proxmox Name"
 }
 
 variable "template_id" {
   type        = number
   default     = 9001
-  description = "ID VM Template Debian 12 yang dibuat sebelumnya"
+  description = "ID VM Template"
 }
 
 variable "ssh_public_key" {
   type        = string
-  description = "Public key SSH yang akan di-inject ke user debian"
+  description = "Public key SSH"
 }
 
 variable "vms" {
