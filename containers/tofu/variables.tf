@@ -40,7 +40,7 @@ variable "containers" {
   }))
   default = {
     "ct-debian-01" = {
-      ct_id        = 101
+      ct_id        = 106
       ip_address   = "192.168.1.60/24"
       gateway      = "192.168.1.1"
       password     = "12345"

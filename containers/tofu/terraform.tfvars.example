@@ -7,7 +7,7 @@ ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
 # Contoh 1 Container:
 containers = {
   "ct-debian-01" = {
-    ct_id        = 101
+    ct_id        = 106
     ip_address   = "192.168.1.60/24"
     gateway      = "192.168.1.1"
     password     = "12345"
