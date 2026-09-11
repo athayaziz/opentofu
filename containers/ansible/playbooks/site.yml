@@ -1,7 +1,7 @@
 ---
 - name: Setup dan Konfigurasi LXC Container Debian
   hosts: servers
-  become: true
+  become: false # Sudah login sebagai root, sudo belum terpasang di container fresh
   gather_facts: false
 
   pre_tasks:
