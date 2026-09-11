@@ -15,7 +15,8 @@ resource "proxmox_virtual_environment_container" "debian_ct" {
     hostname = each.key
     ip_config {
       ipv4 {
-        address = "dhcp"
+        address = each.value.ip_address
+        gateway = each.value.ip_address != "dhcp" ? each.value.gateway : null
       }
     }
     user_account {
@@ -50,27 +51,13 @@ resource "proxmox_virtual_environment_container" "debian_ct" {
   }
 }
 
-# Data source untuk membaca IP aktual dari container
-data "proxmox_virtual_environment_container_interfaces" "ct_net" {
-  for_each     = proxmox_virtual_environment_container.debian_ct
-  node_name    = var.proxmox_node
-  container_id = each.value.vm_id
-}
-
 # Handoff otomatis ke Ansible (membuat file hosts.ini)
 resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/inventory.tmpl", {
     containers = [
-      for k, ct in proxmox_virtual_environment_container.debian_ct : {
+      for k, ct in var.containers : {
         name = k
-        ip = try(
-          [
-            for iface in data.proxmox_virtual_environment_container_interfaces.ct_net[k].interfaces :
-            [for ip in iface.ip_addresses : ip.address if ip.type == "inet"]
-            if iface.name == "eth0"
-          ][0][0],
-          "127.0.0.1"
-        )
+        ip   = ct.ip_address != "dhcp" ? split("/", ct.ip_address)[0] : ct.ip_address
         user = "root"
       }
     ]

@@ -29,6 +29,8 @@ variable "ssh_public_key" {
 variable "containers" {
   type = map(object({
     ct_id        = number
+    ip_address   = optional(string, "192.168.1.60/24")
+    gateway      = optional(string, "192.168.1.1")
     password     = string
     cores        = optional(number, 1)
     memory       = optional(number, 1024)
@@ -39,6 +41,8 @@ variable "containers" {
   default = {
     "ct-debian-01" = {
       ct_id        = 101
+      ip_address   = "192.168.1.60/24"
+      gateway      = "192.168.1.1"
       password     = "12345"
       cores        = 1
       memory       = 1024
