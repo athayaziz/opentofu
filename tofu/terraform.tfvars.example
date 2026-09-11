@@ -2,7 +2,44 @@ proxmox_endpoint  = "https://pve.athayaafatih.my.id/"
 proxmox_api_token = "opentofu@pve!tofu-token=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 proxmox_node      = "pve"
 template_id       = 9001
-vm_id             = 202
-vm_name           = "srv-debian-01"
 ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
-vm_password       = "12345"
+
+# Contoh 1 VM:
+vms = {
+  "srv-debian-01" = {
+    vm_id     = 202
+    username  = "debian"
+    password  = "12345"
+    cores     = 1
+    memory    = 2048
+    disk_size = 15
+  }
+}
+
+# Contoh Multi-VM (3 VM) dengan user & pass berbeda:
+# vms = {
+#   "srv-web-01" = {
+#     vm_id     = 202
+#     username  = "webadmin"
+#     password  = "WebPass123!"
+#     cores     = 2
+#     memory    = 2048
+#     disk_size = 15
+#   },
+#   "srv-app-01" = {
+#     vm_id     = 203
+#     username  = "appadmin"
+#     password  = "AppPass123!"
+#     cores     = 2
+#     memory    = 4096
+#     disk_size = 20
+#   },
+#   "srv-db-01" = {
+#     vm_id     = 204
+#     username  = "dbadmin"
+#     password  = "DbPass123!"
+#     cores     = 4
+#     memory    = 4096
+#     disk_size = 30
+#   }
+# }

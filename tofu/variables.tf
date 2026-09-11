@@ -21,25 +21,29 @@ variable "template_id" {
   description = "ID VM Template Debian 12 yang dibuat sebelumnya"
 }
 
-variable "vm_id" {
-  type        = number
-  default     = 202
-  description = "VM ID baru yang akan dibuat"
-}
-
-variable "vm_name" {
-  type        = string
-  default     = "srv-debian-01"
-}
-
 variable "ssh_public_key" {
   type        = string
   description = "Public key SSH yang akan di-inject ke user debian"
 }
 
-variable "vm_password" {
-  type        = string
-  default     = "12345"
-  description = "Password user debian untuk login Console Proxmox"
-  sensitive   = true
+variable "vms" {
+  type = map(object({
+    vm_id     = number
+    username  = string
+    password  = string
+    cores     = optional(number, 1)
+    memory    = optional(number, 2048)
+    disk_size = optional(number, 15)
+  }))
+  default = {
+    "srv-debian-01" = {
+      vm_id     = 202
+      username  = "debian"
+      password  = "12345"
+      cores     = 1
+      memory    = 2048
+      disk_size = 15
+    }
+  }
+  description = "Peta VM yang akan dibuat. Bisa 1 VM atau lebih, masing-masing dengan user & password berbeda."
 }

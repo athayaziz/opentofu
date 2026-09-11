@@ -19,10 +19,10 @@
         name: openssh-server
         state: present
         
-    - name: Pastikan user debian memiliki akses sudo tanpa password
+    - name: Pastikan user memiliki akses sudo tanpa password
       ansible.builtin.lineinfile:
-        path: /etc/sudoers.d/debian
-        line: "debian ALL=(ALL) NOPASSWD:ALL"
+        path: "/etc/sudoers.d/{{ ansible_user }}"
+        line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
         create: yes
         mode: "0440"
         validate: "visudo -cf %s"

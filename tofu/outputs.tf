@@ -1,8 +1,11 @@
-output "vm_name" {
-  value = proxmox_virtual_environment_vm.debian_srv.name
-}
-
-output "vm_ip_address" {
-  value       = local.vm_ip
-  description = "IP yang didapat VM dari DHCP"
+output "vms" {
+  value = {
+    for k, vm in proxmox_virtual_environment_vm.debian_srv : k => {
+      id       = vm.vm_id
+      name     = vm.name
+      ip       = vm.ipv4_addresses[1][0]
+      username = var.vms[k].username
+    }
+  }
+  description = "Daftar VM yang berhasil dibuat beserta IP dan username masing-masing"
 }

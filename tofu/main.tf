@@ -1,7 +1,9 @@
 resource "proxmox_virtual_environment_vm" "debian_srv" {
-  name            = var.vm_name
+  for_each        = var.vms
+
+  name            = each.key
   node_name       = var.proxmox_node
-  vm_id           = var.vm_id
+  vm_id           = each.value.vm_id
   stop_on_destroy = true
 
   # 1. Clone dari template Debian 12
@@ -18,17 +20,17 @@ resource "proxmox_virtual_environment_vm" "debian_srv" {
 
   # 3. Hardware Specs
   cpu {
-    cores = 1
+    cores = each.value.cores
     type  = "host"
   }
 
   memory {
-    dedicated = 2048
+    dedicated = each.value.memory
   }
 
   disk {
     datastore_id = "local-lvm"
-    size         = 15
+    size         = each.value.disk_size
     interface    = "scsi0"
   }
 
@@ -40,24 +42,23 @@ resource "proxmox_virtual_environment_vm" "debian_srv" {
       }
     }
     user_account {
-      username = "debian"
-      password = var.vm_password
+      username = each.value.username
+      password = each.value.password
       keys     = [trimspace(var.ssh_public_key)]
     }
   }
 }
 
-# Local untuk mengambil IP DHCP dari QEMU Guest Agent
-# ipv4_addresses[1][0] = IP dari NIC pertama (index 0 = loopback)
-locals {
-  vm_ip = proxmox_virtual_environment_vm.debian_srv.ipv4_addresses[1][0]
-}
-
 # 5. Handoff otomatis ke Ansible (membuat file hosts.ini)
 resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/inventory.tmpl", {
-    vm_name = proxmox_virtual_environment_vm.debian_srv.name
-    vm_ip   = local.vm_ip
+    vms = [
+      for k, vm in proxmox_virtual_environment_vm.debian_srv : {
+        name = vm.name
+        ip   = vm.ipv4_addresses[1][0]
+        user = var.vms[k].username
+      }
+    ]
   })
   filename = "${path.module}/../ansible/inventory/hosts.ini"
 }

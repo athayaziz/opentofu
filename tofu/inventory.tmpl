@@ -1,2 +1,4 @@
 [servers]
-${vm_name} ansible_host=${vm_ip} ansible_user=debian
+%{ for vm in vms ~}
+${vm.name} ansible_host=${vm.ip} ansible_user=${vm.user}
+%{ endfor ~}
