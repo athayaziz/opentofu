@@ -1,5 +1,5 @@
 ---
-- name: Setup dan Konfigurasi Server Debian
+- name: Setup dan Konfigurasi Production Server Debian
   hosts: servers
   become: true
   gather_facts: false # Ditunda sampai koneksi SSH siap
@@ -7,24 +7,47 @@
   pre_tasks:
     - name: Tunggu hingga service SSH VM siap menerima koneksi
       ansible.builtin.wait_for_connection:
-        delay: 10
+        delay: 5
         timeout: 180
 
     - name: Ambil data fakta sistem
       ansible.builtin.setup:
 
   tasks:
-    - name: Install SSH Server dan paket utilitas dasar
+    # -------------------------------------------------------------
+    # 1. DEPENDENSI DASAR & PAKET PRODUKSI
+    # -------------------------------------------------------------
+    - name: Update apt cache dan pasang paket esensial produksi
       ansible.builtin.apt:
         name:
-          - openssh-server
           - ca-certificates
           - curl
           - gnupg
+          - wget
           - git
+          - sudo
+          - openssh-server
+          - qemu-guest-agent
           - htop
+          - ufw
+          - tar
+          - unzip
+          - net-tools
         state: present
         update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Pastikan service OpenSSH berjalan dan aktif saat boot
+      ansible.builtin.systemd:
+        name: ssh
+        state: started
+        enabled: yes
+
+    - name: Pastikan QEMU Guest Agent berjalan
+      ansible.builtin.systemd:
+        name: qemu-guest-agent
+        state: started
+        enabled: yes
 
     - name: Pastikan user memiliki akses sudo tanpa password
       ansible.builtin.lineinfile:
@@ -34,36 +57,45 @@
         mode: "0440"
         validate: "visudo -cf %s"
 
-    # --- SETUP DOCKER RESMI ---
-    - name: Buat direktori keyrings untuk apt
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
+    # -------------------------------------------------------------
+    # 2. INSTALASI DOCKER COMMUNITY EDITION (OFFICIAL REPO)
+    # -------------------------------------------------------------
+    - name: Cek apakah Docker sudah terpasang
+      ansible.builtin.command: docker --version
+      register: docker_check
+      failed_when: false
+      changed_when: false
 
-    - name: Unduh GPG key resmi Docker
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/debian/gpg
-        dest: /etc/apt/keyrings/docker.asc
-        mode: '0644'
-        force: false
+    - name: Setup dan Install Docker CE Resmi
+      when: docker_check.rc != 0
+      block:
+        - name: Unduh GPG key resmi Docker
+          ansible.builtin.shell: |
+            install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+            chmod a+r /etc/apt/keyrings/docker.asc
+          args:
+            creates: /etc/apt/keyrings/docker.asc
 
-    - name: Tambahkan repository resmi Docker
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
-        state: present
-        filename: docker
+        - name: Tambahkan repository resmi Docker ke Apt sources
+          ansible.builtin.shell: |
+            ARCH=$(dpkg --print-architecture)
+            CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+            if [ "$CODENAME" = "trixie" ]; then CODENAME="bookworm"; fi
+            echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian ${CODENAME} stable" > /etc/apt/sources.list.d/docker.list
+          args:
+            creates: /etc/apt/sources.list.d/docker.list
 
-    - name: Install Docker CE, CLI, dan Docker Compose Plugin
-      ansible.builtin.apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-        state: present
-        update_cache: yes
+        - name: Update apt cache dan pasang paket Docker CE & Compose
+          ansible.builtin.apt:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-buildx-plugin
+              - docker-compose-plugin
+            state: present
+            update_cache: yes
 
     - name: Pastikan service Docker aktif dan berjalan otomatis saat boot
       ansible.builtin.systemd:
@@ -71,26 +103,20 @@
         state: started
         enabled: yes
 
-    - name: Masukkan user ke group docker (bisa jalankan docker tanpa sudo)
+    - name: Pastikan user terdaftar di group docker (akses tanpa sudo)
       ansible.builtin.user:
         name: "{{ ansible_user }}"
         groups: docker
         append: yes
 
-    # --- VERIFIKASI INSTALASI DOCKER ---
-    - name: Cek versi Docker yang terpasang
+    # -------------------------------------------------------------
+    # 3. VERIFIKASI & STATUS
+    # -------------------------------------------------------------
+    - name: Ambil versi Docker yang terpasang
       ansible.builtin.command: docker --version
       register: docker_version
       changed_when: false
 
-    - name: Cek versi Docker Compose yang terpasang
-      ansible.builtin.command: docker compose version
-      register: compose_version
-      changed_when: false
-
     - name: Tampilkan status sukses
       ansible.builtin.debug:
-        msg:
-          - "Server {{ inventory_hostname }} (IP: {{ ansible_host }}) berhasil dikonfigurasi!"
-          - "{{ docker_version.stdout }}"
-          - "{{ compose_version.stdout }}"
+        msg: "Server {{ inventory_hostname }} ({{ ansible_host }}) siap digunakan! Docker terpasang: {{ docker_version.stdout }}"
