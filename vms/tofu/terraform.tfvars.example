@@ -6,12 +6,12 @@ ssh_public_key    = "ssh-ed25519 AAAAC3... (isi dari id_ansible.pub)"
 
 # Contoh 1 VM:
 vms = {
-  "srv-debian-01" = {
-    vm_id     = 202
+  "uptime-kuma" = {
+    vm_id     = 203
     username  = "debian"
     password  = "12345"
     cores     = 1
-    memory    = 2048
+    memory    = 1024
     disk_size = 15
   }
 }
