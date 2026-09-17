@@ -36,12 +36,12 @@ variable "vms" {
     disk_size = optional(number, 15)
   }))
   default = {
-    "srv-debian-01" = {
-      vm_id     = 202
+    "uptime-kuma" = {
+      vm_id     = 203
       username  = "debian"
       password  = "12345"
       cores     = 1
-      memory    = 2048
+      memory    = 1024
       disk_size = 15
     }
   }

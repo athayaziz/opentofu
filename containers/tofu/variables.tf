@@ -1,6 +1,5 @@
 variable "proxmox_endpoint" {
   type        = string
-  description = "URL Proxmox Web"
 }
 
 variable "proxmox_api_token" {
@@ -12,13 +11,11 @@ variable "proxmox_api_token" {
 variable "proxmox_node" {
   type        = string
   default     = "pve"
-  description = "Node Proxmox Name"
 }
 
 variable "template_file_id" {
   type        = string
   default     = "local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst"
-  description = "Template file ID untuk LXC di storage Proxmox (misal: local:vztmpl/...)"
 }
 
 variable "ssh_public_key" {
@@ -37,15 +34,14 @@ variable "containers" {
     unprivileged = optional(bool, true)
   }))
   default = {
-    "ct-debian-01" = {
+    "kubernetes" = {
       ct_id        = 106
       password     = "12345"
-      cores        = 1
-      memory       = 512
+      cores        = 2
+      memory       = 2048
       swap         = 512
       disk_size    = 8
       unprivileged = true
     }
   }
-  description = "Peta LXC Containers yang akan dibuat (DHCP murni)"
 }
