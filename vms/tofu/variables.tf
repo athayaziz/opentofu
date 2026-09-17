@@ -35,6 +35,7 @@ variable "vms" {
     memory    = optional(number, 2048)
     disk_size = optional(number, 15)
   }))
+  
   default = {
     "uptime-kuma" = {
       vm_id     = 203
