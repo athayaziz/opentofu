@@ -14,9 +14,6 @@
       ansible.builtin.setup:
 
   tasks:
-    # -------------------------------------------------------------
-    # 1. DEPENDENSI DASAR & PAKET PRODUKSI
-    # -------------------------------------------------------------
     - name: Update apt cache dan pasang paket esensial produksi
       ansible.builtin.apt:
         name:
@@ -27,12 +24,9 @@
           - git
           - sudo
           - openssh-server
-          - qemu-guest-agent
-          - htop
           - ufw
           - tar
           - unzip
-          - net-tools
         state: present
         update_cache: yes
         cache_valid_time: 3600
@@ -40,12 +34,6 @@
     - name: Pastikan service OpenSSH berjalan dan aktif saat boot
       ansible.builtin.systemd:
         name: ssh
-        state: started
-        enabled: yes
-
-    - name: Pastikan QEMU Guest Agent berjalan
-      ansible.builtin.systemd:
-        name: qemu-guest-agent
         state: started
         enabled: yes
 
@@ -57,9 +45,6 @@
         mode: "0440"
         validate: "visudo -cf %s"
 
-    # -------------------------------------------------------------
-    # 2. INSTALASI DOCKER COMMUNITY EDITION (OFFICIAL REPO)
-    # -------------------------------------------------------------
     - name: Cek apakah Docker sudah terpasang
       ansible.builtin.command: docker --version
       register: docker_check
@@ -109,9 +94,6 @@
         groups: docker
         append: yes
 
-    # -------------------------------------------------------------
-    # 3. VERIFIKASI & STATUS
-    # -------------------------------------------------------------
     - name: Ambil versi Docker yang terpasang
       ansible.builtin.command: docker --version
       register: docker_version
