@@ -42,7 +42,7 @@ variable "vms" {
       username  = "debian"
       password  = "12345"
       cores     = 1
-      memory    = 1024
+      memory    = 2048
       disk_size = 15
     }
   }
