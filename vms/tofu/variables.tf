@@ -37,7 +37,7 @@ variable "vms" {
   }))
   
   default = {
-    "uptime-kuma" = {
+    "semaphore-ui" = {
       vm_id     = 203
       username  = "debian"
       password  = "12345"
