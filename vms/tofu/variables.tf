@@ -41,9 +41,9 @@ variable "vms" {
       vm_id     = 203
       username  = "debian"
       password  = "12345"
-      cores     = 1
-      memory    = 2048
-      disk_size = 15
+      cores     = 2
+      memory    = 4096
+      disk_size = 20
     }
   }
   description = "Peta VM yang akan dibuat. Bisa 1 VM atau lebih, masing-masing dengan user & password berbeda."
