@@ -37,7 +37,7 @@ variable "vms" {
   }))
   
   default = {
-    "semaphore-ui" = {
+    "xyops" = {
       vm_id     = 203
       username  = "debian"
       password  = "12345"
