@@ -37,9 +37,9 @@ variable "vms" {
   }))
   
   default = {
-    "xyops" = {
+    "debian-13-xyops" = {
       vm_id     = 203
-      username  = "debian"
+      username  = "xyadmin"
       password  = "12345"
       cores     = 2
       memory    = 4096
