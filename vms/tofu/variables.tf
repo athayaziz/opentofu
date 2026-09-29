@@ -45,5 +45,14 @@ variable "vms" {
       memory    = 2048
       disk_size = 15
     }
+
+    "debian-13-xyops" = {
+      vm_id     = 203
+      username  = "xyops"
+      password  = "12345"
+      cores     = 2
+      memory    = 4096
+      disk_size = 20
+    }
   }
 }
