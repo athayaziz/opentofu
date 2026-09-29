@@ -37,12 +37,12 @@ variable "vms" {
   }))
   
   default = {
-    "debian-13-benchmark" = {
-      vm_id     = 204
-      username  = "benchmark"
+    "debian-13-xyops" = {
+      vm_id     = 203
+      username  = "xyops"
       password  = "12345"
       cores     = 2
-      memory    = 2048
+      memory    = 4096
       disk_size = 20
     }
   }
