@@ -38,7 +38,7 @@ variable "vms" {
   
   default = {
     "debian-13-benchmark" = {
-      vm_id     = 203
+      vm_id     = 204
       username  = "benchmark"
       password  = "12345"
       cores     = 2
