@@ -42,7 +42,7 @@ variable "vms" {
       username  = "benchmark"
       password  = "12345"
       cores     = 2
-      memory    = 2048
+      memory    = 4096
       disk_size = 15
     }
 
